@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package com.example.app.grpc;
+
+option java_package = "com.example.app.grpc.proto";
+option java_outer_classname = "OrderServiceProto";
+option java_multiple_files = true;
+
+import "common.proto";
+
+message OrderItemProto {
+  string product_id = 1;
+  string name = 2;
+  int32 quantity = 3;
+  double unit_price = 4;
+}
+
+message OrderProto {
+  string id = 1;
+  string user_id = 2;
+  repeated OrderItemProto items = 3;
+  double total_amount = 4;
+  string status = 5;
+  string tenant_id = 6;
+  Timestamp created_at = 7;
+}
+
+message CreateOrderRequest {
+  string user_id = 1;
+  repeated OrderItemProto items = 2;
+  string tenant_id = 3;
+}
+
+message GetOrderRequest {
+  string id = 1;
+}
+
+message ListOrdersByUserRequest {
+  string user_id = 1;
+  PageRequest page = 2;
+}
+
+message ListOrdersResponse {
+  repeated OrderProto orders = 1;
+  PageInfo page_info = 2;
+}
+
+message UpdateOrderStatusRequest {
+  string id = 1;
+  string status = 2;
+  string reason = 3;
+}
+
+service OrderGrpcService {
+  rpc CreateOrder(CreateOrderRequest) returns (OrderProto);
+  rpc GetOrder(GetOrderRequest) returns (OrderProto);
+  rpc ListOrdersByUser(ListOrdersByUserRequest) returns (ListOrdersResponse);
+  rpc UpdateOrderStatus(UpdateOrderStatusRequest) returns (OrderProto);
+  rpc StreamOrderUpdates(GetOrderRequest) returns (stream OrderProto);
+}

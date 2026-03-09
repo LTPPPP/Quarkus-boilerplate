@@ -1,0 +1,164 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "title": "HTTP Request Rate",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_count{application=\"quarkus-boilerplate\"}[5m])",
+          "legendFormat": "{{method}} {{uri}} {{status}}"
+        }
+      ]
+    },
+    {
+      "title": "HTTP Response Time (p95)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(http_server_requests_seconds_bucket{application=\"quarkus-boilerplate\"}[5m]))",
+          "legendFormat": "{{method}} {{uri}}"
+        }
+      ]
+    },
+    {
+      "title": "JVM Heap Memory",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "jvm_memory_used_bytes{application=\"quarkus-boilerplate\", area=\"heap\"}",
+          "legendFormat": "{{id}} used"
+        },
+        {
+          "expr": "jvm_memory_max_bytes{application=\"quarkus-boilerplate\", area=\"heap\"}",
+          "legendFormat": "{{id}} max"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        }
+      }
+    },
+    {
+      "title": "JVM Thread Count",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 8 },
+      "targets": [
+        {
+          "expr": "jvm_threads_live_threads{application=\"quarkus-boilerplate\"}",
+          "legendFormat": "Live Threads"
+        }
+      ]
+    },
+    {
+      "title": "JVM GC Pause Duration",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 8 },
+      "targets": [
+        {
+          "expr": "rate(jvm_gc_pause_seconds_sum{application=\"quarkus-boilerplate\"}[5m])",
+          "legendFormat": "{{cause}} {{action}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        }
+      }
+    },
+    {
+      "title": "Kafka Consumer Lag",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "kafka_consumer_fetch_manager_records_lag{application=\"quarkus-boilerplate\"}",
+          "legendFormat": "{{topic}} - {{partition}}"
+        }
+      ]
+    },
+    {
+      "title": "gRPC Request Rate",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        {
+          "expr": "rate(grpc_server_handled_total{application=\"quarkus-boilerplate\"}[5m])",
+          "legendFormat": "{{grpc_service}}/{{grpc_method}} [{{grpc_code}}]"
+        }
+      ]
+    },
+    {
+      "title": "Database Connection Pool",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "targets": [
+        {
+          "expr": "agroal_active_count{application=\"quarkus-boilerplate\"}",
+          "legendFormat": "Active"
+        },
+        {
+          "expr": "agroal_available_count{application=\"quarkus-boilerplate\"}",
+          "legendFormat": "Available"
+        },
+        {
+          "expr": "agroal_max_used_count{application=\"quarkus-boilerplate\"}",
+          "legendFormat": "Max Used"
+        }
+      ]
+    },
+    {
+      "title": "System CPU & Load",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
+      "targets": [
+        {
+          "expr": "system_cpu_usage{application=\"quarkus-boilerplate\"}",
+          "legendFormat": "System CPU"
+        },
+        {
+          "expr": "process_cpu_usage{application=\"quarkus-boilerplate\"}",
+          "legendFormat": "Process CPU"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "max": 1
+        }
+      }
+    }
+  ],
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": ["quarkus", "boilerplate"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Quarkus Enterprise Boilerplate - Metrics",
+  "uid": "quarkus-boilerplate",
+  "version": 1,
+  "weekStart": ""
+}

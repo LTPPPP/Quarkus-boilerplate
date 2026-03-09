@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package com.example.app.grpc;
+
+option java_package = "com.example.app.grpc.proto";
+option java_outer_classname = "UserServiceProto";
+option java_multiple_files = true;
+
+import "common.proto";
+
+message UserProto {
+  string id = 1;
+  string email = 2;
+  string full_name = 3;
+  string role = 4;
+  string status = 5;
+  Timestamp created_at = 6;
+  Timestamp updated_at = 7;
+}
+
+message CreateUserRequest {
+  string email = 1;
+  string password = 2;
+  string full_name = 3;
+  string role = 4;
+}
+
+message UpdateUserRequest {
+  string id = 1;
+  string full_name = 2;
+  string role = 3;
+  bool is_active = 4;
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message DeleteUserRequest {
+  string id = 1;
+}
+
+message ListUsersRequest {
+  PageRequest page = 1;
+  string role_filter = 2;
+  string status_filter = 3;
+  string tenant_id = 4;
+}
+
+message ListUsersResponse {
+  repeated UserProto users = 1;
+  PageInfo page_info = 2;
+}
+
+message UserExistsRequest {
+  string email = 1;
+}
+
+message UserExistsResponse {
+  bool exists = 1;
+  string user_id = 2;
+}
+
+message ChatMessage {
+  string sender_id = 1;
+  string content = 2;
+  Timestamp sent_at = 3;
+  string tenant_id = 4;
+}
+
+service UserGrpcService {
+  rpc GetUser(GetUserRequest) returns (UserProto);
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  rpc CreateUser(CreateUserRequest) returns (UserProto);
+  rpc UpdateUser(UpdateUserRequest) returns (UserProto);
+  rpc DeleteUser(DeleteUserRequest) returns (Empty);
+  rpc UserExists(UserExistsRequest) returns (UserExistsResponse);
+  rpc StreamUsers(ListUsersRequest) returns (stream UserProto);
+  rpc BatchCreateUsers(stream CreateUserRequest) returns (ListUsersResponse);
+  rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+}

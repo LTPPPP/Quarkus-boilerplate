@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package com.example.app.grpc;
+
+option java_package = "com.example.app.grpc.proto";
+option java_outer_classname = "PaymentServiceProto";
+option java_multiple_files = true;
+
+import "common.proto";
+
+message PaymentProto {
+  string id = 1;
+  string order_id = 2;
+  double amount = 3;
+  string currency = 4;
+  string status = 5;
+  string gateway_ref = 6;
+}
+
+message InitiatePaymentRequest {
+  string order_id = 1;
+  double amount = 2;
+  string currency = 3;
+  string method = 4;
+}
+
+message PaymentStatusRequest {
+  string payment_id = 1;
+}
+
+message RefundRequest {
+  string payment_id = 1;
+  double amount = 2;
+  string reason = 3;
+}
+
+message RefundResponse {
+  string refund_id = 1;
+  string status = 2;
+  Timestamp processed_at = 3;
+}
+
+service PaymentGrpcService {
+  rpc InitiatePayment(InitiatePaymentRequest) returns (PaymentProto);
+  rpc GetPaymentStatus(PaymentStatusRequest) returns (PaymentProto);
+  rpc ProcessRefund(RefundRequest) returns (RefundResponse);
+  rpc StreamPaymentEvents(PaymentStatusRequest) returns (stream PaymentProto);
+}

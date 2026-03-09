@@ -1,0 +1,220 @@
+version: "3.9"
+
+services:
+
+  # ============================================================
+  # APPLICATION
+  # ============================================================
+  app:
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile.jvm
+    container_name: ${APP_NAME:-boilerplate}-app
+    ports:
+      - "8080:8080"
+      - "9000:9000"
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-appdb}
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SCHEMA_REGISTRY_URL: http://schema-registry:8081
+      GRPC_PORT: 9000
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      ENCRYPTION_KEY: change-this-default-key-32chars!
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  # ============================================================
+  # POSTGRESQL
+  # ============================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: ${APP_NAME:-boilerplate}-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-appdb}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # ============================================================
+  # REDIS
+  # ============================================================
+  redis:
+    image: redis:7-alpine
+    container_name: ${APP_NAME:-boilerplate}-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # ============================================================
+  # ZOOKEEPER
+  # ============================================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: ${APP_NAME:-boilerplate}-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+    networks:
+      - app-network
+
+  # ============================================================
+  # KAFKA BROKER
+  # ============================================================
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: ${APP_NAME:-boilerplate}-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    depends_on:
+      - zookeeper
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "kafka:29092", "--list"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - app-network
+
+  # ============================================================
+  # SCHEMA REGISTRY
+  # ============================================================
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.5.0
+    container_name: ${APP_NAME:-boilerplate}-schema-registry
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:29092
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  # ============================================================
+  # KAFKA UI
+  # ============================================================
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: ${APP_NAME:-boilerplate}-kafka-ui
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local-dev
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  # ============================================================
+  # JAEGER (Distributed Tracing)
+  # ============================================================
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    container_name: ${APP_NAME:-boilerplate}-jaeger
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    networks:
+      - app-network
+
+  # ============================================================
+  # PROMETHEUS
+  # ============================================================
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: ${APP_NAME:-boilerplate}-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    networks:
+      - app-network
+
+  # ============================================================
+  # GRAFANA
+  # ============================================================
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: ${APP_NAME:-boilerplate}-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+    networks:
+      - app-network
+
+volumes:
+  postgres-data:
+  redis-data:
+  zookeeper-data:
+  kafka-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  app-network:
+    driver: bridge

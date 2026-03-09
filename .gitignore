@@ -1,0 +1,227 @@
+# ============================================================
+# BUILD ARTIFACTS
+# ============================================================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+
+# ============================================================
+# IDE & EDITOR
+# ============================================================
+# IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.project
+.classpath
+.settings/
+.factorypath
+bin/
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Vim/Neovim
+*.swp
+*.swo
+*~
+*.un~
+
+# Emacs
+\#*\#
+.#*
+
+# ============================================================
+# OS
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ============================================================
+# QUARKUS
+# ============================================================
+.quarkus/
+
+# ============================================================
+# NATIVE IMAGE
+# ============================================================
+*-runner
+*-runner.jar
+*.jniconfig
+*.reflectconfig
+
+# ============================================================
+# LOGS
+# ============================================================
+*.log
+logs/
+*.log.*
+hs_err_pid*
+replay_pid*
+
+# ============================================================
+# ENVIRONMENT & SECRETS
+# ============================================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+
+# JWT / TLS / Certificates
+privateKey.pem
+certs/*.crt
+certs/*.key
+certs/*.pem
+certs/*.p12
+certs/*.jks
+!certs/README.md
+
+# Vault tokens
+.vault-token
+vault-secrets/
+
+# Cloud credentials
+credentials.json
+service-account*.json
+*.keystore
+*.truststore
+
+# ============================================================
+# DOCKER & CONTAINERS
+# ============================================================
+postgres-data/
+redis-data/
+kafka-data/
+zookeeper-data/
+prometheus-data/
+grafana-data/
+docker-data/
+.docker/
+
+# ============================================================
+# KUBERNETES & HELM
+# ============================================================
+# Helm generated
+k8s/**/charts/
+k8s/**/Chart.lock
+helm/**/charts/
+helm/**/Chart.lock
+
+# Kubeconfig (NEVER commit)
+kubeconfig
+kubeconfig.*
+.kube/
+
+# Skaffold
+.skaffold/
+
+# Tilt
+.tilt/
+tilt_modules/
+
+# ============================================================
+# TERRAFORM & INFRASTRUCTURE AS CODE
+# ============================================================
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+.terraform/
+.terraform.lock.hcl
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Pulumi
+Pulumi.*.yaml
+!Pulumi.yaml
+.pulumi/
+
+# Ansible
+*.retry
+
+# ============================================================
+# CI/CD
+# ============================================================
+# GitHub Actions
+.act/
+
+# Jenkins
+.jenkins/
+
+# GitLab CI
+.gitlab-ci-local/
+
+# SonarQube
+.scannerwork/
+.sonar/
+sonar-project.properties
+
+# Code coverage
+coverage/
+*.lcov
+jacoco.exec
+target/site/jacoco/
+
+# ============================================================
+# PACKAGE ARCHIVES
+# ============================================================
+*.zip
+*.tar.gz
+*.tar.bz2
+*.rar
+*.7z
+*.gz
+
+# ============================================================
+# PROFILING & DEBUGGING
+# ============================================================
+*.hprof
+*.jfr
+*.nps
+flight_recording_*
+heap_dump_*
+
+# ============================================================
+# DOCUMENTATION BUILD
+# ============================================================
+site/
+.cache/
+_site/
+
+# ============================================================
+# MISC
+# ============================================================
+tmp/
+temp/
+.tmp/
+*.bak
+*.orig
+*.patch
+.flattened-pom.xml

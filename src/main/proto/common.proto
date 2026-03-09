@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package com.example.app.grpc;
+
+option java_package = "com.example.app.grpc.proto";
+option java_outer_classname = "CommonProto";
+option java_multiple_files = true;
+
+message Timestamp {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}
+
+message PageRequest {
+  int32 page = 1;
+  int32 size = 2;
+  string sort_by = 3;
+  string sort_dir = 4;
+}
+
+message PageInfo {
+  int64 total_elements = 1;
+  int32 total_pages = 2;
+  int32 current_page = 3;
+}
+
+message ErrorDetail {
+  string code = 1;
+  string message = 2;
+  string field = 3;
+}
+
+message Empty {}
