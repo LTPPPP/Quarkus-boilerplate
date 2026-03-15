@@ -1,5 +1,6 @@
 package com.example.app.tenant.filter;
 
+import com.example.app.config.AuditContext;
 import com.example.app.exception.UnauthorizedException;
 import com.example.app.tenant.context.TenantContext;
 import com.example.app.tenant.domain.TenantEntity;
@@ -14,6 +15,7 @@ import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.core.UriInfo;
 import jakarta.ws.rs.ext.Provider;
 
@@ -21,6 +23,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import org.jboss.logging.MDC;
 
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -72,6 +75,9 @@ public class TenantFilter implements ContainerRequestFilter, ContainerResponseFi
             TenantContext.setCurrentTenant(tenantId);
             MDC.put("tenantId", tenantId);
 
+            // Extract authenticated user from SecurityContext for audit trail
+            resolveAuditUser(requestContext);
+
             LOG.debugf("Tenant context set: %s for path: %s", tenantId, path);
         } catch (UnauthorizedException e) {
             throw e;
@@ -84,7 +90,22 @@ public class TenantFilter implements ContainerRequestFilter, ContainerResponseFi
     @Override
     public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
         TenantContext.clear();
+        AuditContext.clear();
         MDC.remove("tenantId");
+        MDC.remove("userId");
+    }
+
+    private void resolveAuditUser(ContainerRequestContext requestContext) {
+        SecurityContext securityContext = requestContext.getSecurityContext();
+        if (securityContext != null) {
+            Principal principal = securityContext.getUserPrincipal();
+            if (principal != null && principal.getName() != null) {
+                AuditContext.setCurrentUser(principal.getName());
+                MDC.put("userId", principal.getName());
+                return;
+            }
+        }
+        AuditContext.setCurrentUser(AuditContext.SYSTEM_USER);
     }
 
     private boolean isPublicPath(String path) {

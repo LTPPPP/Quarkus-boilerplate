@@ -1,5 +1,6 @@
 package com.example.app.service;
 
+import com.example.app.config.DistributedLock;
 import com.example.app.domain.PaymentEntity;
 import com.example.app.event.domain.EventType;
 import com.example.app.event.domain.PaymentEvent;
@@ -45,6 +46,7 @@ public class PaymentService {
     }
 
     @Transactional
+    @DistributedLock(key = "payment:initiate:{orderId}", timeoutSeconds = 30)
     public PaymentEntity initiatePayment(UUID orderId, BigDecimal amount, String currency, String method) {
         if (orderId == null) {
             throw new ValidationException("Order ID is required");
@@ -73,6 +75,7 @@ public class PaymentService {
     }
 
     @Transactional
+    @DistributedLock(key = "payment:refund:{paymentId}", timeoutSeconds = 30)
     public PaymentEntity processRefund(UUID paymentId, BigDecimal refundAmount, String reason) {
         PaymentEntity payment = findById(paymentId);
 

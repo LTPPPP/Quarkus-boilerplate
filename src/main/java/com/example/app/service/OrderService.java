@@ -1,5 +1,6 @@
 package com.example.app.service;
 
+import com.example.app.config.DistributedLock;
 import com.example.app.domain.OrderEntity;
 import com.example.app.domain.OrderItemEntity;
 import com.example.app.event.producer.OrderEventProducer;
@@ -86,6 +87,7 @@ public class OrderService {
     }
 
     @Transactional
+    @DistributedLock(key = "order:status:{orderId}", timeoutSeconds = 15)
     public OrderEntity updateStatus(UUID orderId, OrderEntity.OrderStatus newStatus, String reason) {
         OrderEntity order = findById(orderId);
         String previousStatus = order.getStatus().name();

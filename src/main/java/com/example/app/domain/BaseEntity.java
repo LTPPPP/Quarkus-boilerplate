@@ -1,5 +1,7 @@
 package com.example.app.domain;
 
+import com.example.app.config.AuditContext;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -26,6 +28,12 @@ public abstract class BaseEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "created_by", updatable = false)
+    private String createdBy;
+
+    @Column(name = "updated_by")
+    private String updatedBy;
+
     @Version
     @Column(name = "version")
     private Long entityVersion;
@@ -35,11 +43,15 @@ public abstract class BaseEntity {
         Instant now = Instant.now();
         this.createdAt = now;
         this.updatedAt = now;
+        String currentUser = AuditContext.getCurrentUser();
+        this.createdBy = currentUser;
+        this.updatedBy = currentUser;
     }
 
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = Instant.now();
+        this.updatedBy = AuditContext.getCurrentUser();
     }
 
     public UUID getId() {
@@ -64,6 +76,22 @@ public abstract class BaseEntity {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
     }
 
     public Long getEntityVersion() {
